@@ -1,0 +1,225 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.css" />
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="http://momentjs.com/downloads/moment.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js"></script>
+<style>
+    .dashboard #content {
+    width:94%;
+}
+</style>
+<script type="text/javascript">
+    $(document).ready(function() {
+    $('#calendar').fullCalendar({
+        //height: 600,
+        locale: 'es',
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            // right: 'month,basicWeek,basicDay,listWeek'
+            right: 'agendaDay,agendaWeek,month',
+            // right: 'month,agendaWeek,agendaDay,listWeek,listDay,listMonth,listYear,list',
+        },
+        defaultView: 'agendaWeek',
+        buttonText: {
+            today: 'Hoy',
+            month: 'Ver por Mes',
+            week: 'Ver por Semana',
+            day: 'Ver por Día',
+            listDay: 'Lista por dia',
+            listWeek: 'Lista por semana',
+            listMonth: 'Lista por mes',
+            listYear: 'Lista por año',
+        },
+        eventClick: function(calEvent, jsEvent, view) {
+            selectCita = calEvent;
+            calEvent.estado = calEvent.sin_atender ? "Por Atender" : "Atendido";
+            var h = '<li class="list-group-item" style="background:' + calEvent.color + '"><strong><span class="glyphicon glyphicon-tags"></span> Titulo: </strong>' + calEvent.title + '</li>' +
+                '<li class="list-group-item"><strong><span class="glyphicon glyphicon-question-sign"></span> Descripcion: </strong>' + calEvent.descripcion + '</li>' +
+                '<li class="list-group-item"><strong><span class="glyphicon glyphicon-calendar"></span> Fecha: </strong>' + calEvent.start._i + '</li>' +
+                '<li class="list-group-item"><strong><span class="glyphicon glyphicon-check"></span> Estado: </strong>' + calEvent.estado + '</li>' +
+                '<li class="list-group-item"><strong><span class="glyphicon glyphicon-user"></span> Veterinario: </strong>' + calEvent.veterinario_nombre + '</li>' +
+                '<li class="list-group-item"><strong><span class="glyphicon glyphicon-user"></span> Cliente: </strong>' + calEvent.cliente_nombre + '</li>';
+            $('#detailCita').html(h);
+            $("#eliminar-cita").attr("href", "/cita/eliminar/"+calEvent.pkd+"/");
+            $('#myModalOptions').modal('show');
+        },
+        // header: {
+        //     left: '',
+        //     center: 'prev title next',
+        //     right: ''
+        // },
+        //defaultDate: '2016-01-12',
+        selectable: true,
+
+        eventLimit: true, // allow "more" link when too many events
+        //selectHelper: true,
+        editable: true,
+        //resize: true,
+        //slotMinutes: 60,
+        navLinks: true,
+        allDaySlot: false, //para mostar en el calendario todo el dia
+        //scrollTime: '08:00:00',
+        //minTime: "00:00:00",
+        //maxTime: "18:00:00",
+        slotEventOverlap: false, //para que no se pueda poner encima mas o la misma hora
+        //weekends: false, //si incluye fin de semanas or //hiddenDays: [ 1, 3, 5 ]
+        //droppable: true, // this allows things to be dropped onto the calendar
+        selectHelper: true,
+        select: function(start, end) {
+            var title = prompt('Event Title:');
+            var eventData;
+            if (title) {
+                eventData = {
+                    title: title,
+                    start: start,
+                    end: end
+                };
+                $('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
+            }
+            $('#calendar').fullCalendar('unselect');
+        },
+        events: [
+                {
+                    title: 'All Day Event',
+                    start: '2017-02-01'
+                },
+                {
+                    title: 'Long Event',
+                    start: '2017-02-07',
+                    end: '2017-02-10'
+                },
+                {
+                    id: 999,
+                    title: 'Repeating Event',
+                    start: '2017-02-09T16:00:00'
+                },
+                {
+                    id: 999,
+                    title: 'Repeating Event',
+                    start: '2017-02-16T16:00:00'
+                },
+                {
+                    title: 'Conference',
+                    start: '2017-02-11',
+                    end: '2017-02-13'
+                },
+                {
+                    title: 'Meeting',
+                    start: '2017-02-12T10:30:00',
+                    end: '2017-02-12T12:30:00'
+                },
+                {
+                    title: 'Lunch',
+                    start: '2017-02-12T12:00:00'
+                },
+                {
+                    title: 'Meeting',
+                    start: '2017-02-12T14:30:00'
+                },
+                {
+                    title: 'Happy Hour',
+                    start: '2017-02-12T17:30:00'
+                },
+                {
+                    title: 'Dinner',
+                    start: '2017-02-12T20:00:00'
+                },
+                {
+                    title: 'Birthday Party',
+                    start: '2017-02-13T07:00:00'
+                },
+                {
+                    title: 'Click for Google',
+                    url: 'http://google.com/',
+                    start: '2017-02-28'
+                }
+            ],
+        /*select: function(start, end, date) {
+            selectCita = {};
+            $('#myModal').modal({
+                backdrop: 'static',
+                keyboard: false
+            });
+            $("#id_evento").val("");
+            $('#id_date').val(moment(start).format("YYYY-MM-DD HH:mm:ss"));
+            // var title = prompt('Event Title:');
+            // var events;
+            // if (title) {
+            //     events = {
+            //         title: title,
+            //         start: start,
+            //         end: end
+            //     };
+            //     $('#calendar').fullCalendar('renderEvent', events, true); // stick? = true
+            // }
+            // $('#calendar').fullCalendar('unselect');
+        },*/
+        /*events: function(start, end, timezone, callback) {
+            // $.ajax({
+            //     url: '/cita/listar/',
+            //     dataType: 'json',
+            //     type: 'get',
+            //     success: function(doc) {
+            //         var events = [];
+            //         for (var i in doc) {
+            //             events.push({
+            //                 title: doc[i].fields.descripcion,
+            //                 start: doc[i].fields.date,
+            //             });
+            //         }
+            //         callback(events);
+            //     },
+            //     failure: function(data) {
+            //         console.error('Ocurrió un problema al cargar.');
+            //     }
+            // });
+            $.ajax({
+                    url: '/cita/listar/',
+                    type: 'get',
+                    dataType: 'json',
+                    //data: {param1: 'value1'},
+                })
+                .done(function(dat) {
+                    console.log("success", dat);
+                    var events = [];
+                    for (var i in dat) {
+                        dat[i].editable = false;
+                        events.push(dat[i]);
+                    }
+                    callback(events);
+                })
+                .fail(function() {
+                    console.log("error");
+                })
+                .always(function() {
+                    console.log("complete");
+                });
+
+        },*/
+        // events: [
+        // {
+        //     title: 'Conference',
+        //     start: YESTERDAY,
+        //     end: TOMORROW,
+        //     color: 'yellow',
+        //     textColor: 'red',
+        //     backgroundColor: 'blue',
+        //     borderColor: 'green',
+        //     //editable:false,
+        //     overlap: false, //If false, prevents this event from being dragged/resized over other events. ///EVITA la sobreposicion
+        // },]
+
+    });
+});
+</script>{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard{% endblock s
+{% block content %}
+<div id="content-main">
+<div id='calendar'></div>
+</div>
+{% endblock %}
+
