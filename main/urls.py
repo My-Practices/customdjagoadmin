@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import RedirectView
+from apps.home import views
 
 urlpatterns = [
     url(r'^cp/', admin.site.urls),
     url(r'^$',  RedirectView.as_view(url='cp/')),
+    url(r'^cp/eventos/$', views.GetEventsAjax),
 ]

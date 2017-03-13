@@ -1,0 +1,11 @@
+.link_btn_actions{
+    margin:2px;
+    background: #447e9b;
+    padding: 5px 12px;
+    font-weight: 400;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff !important;
+    border-radius: 15px;
+}
