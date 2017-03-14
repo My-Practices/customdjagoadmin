@@ -65,8 +65,7 @@ $(document).ready(function() {
             }
         },
         select: function(start, end) {
-            var title = confirm("¿Estas seguro que deseas separar ese horario?");
-            if (title) {
+            if (confirm("¿Estas seguro que deseas separar ese horario?")) {
                 $.ajax({
                     url: '/cp/eventos/',
                     type: 'post',
@@ -118,11 +117,10 @@ $(document).ready(function() {
                     },
                 })
                 .done(function(dat) {
-                    console.log(dat)
                     callback(dat);
                 })
                 .fail(function() {
-                    console.log("error");
+                    alert("ocurrió un problema al cargar los registros);
                 })
                 .always(function() {
                     console.log("complete");
