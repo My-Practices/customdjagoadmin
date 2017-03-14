@@ -17,6 +17,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def get_color(self):
+        return format_html("<span style='background:%s'>%s</span>" % (self.color, self.color))
+
 
 class Course(models.Model):
     name = models.CharField(max_length=200)
