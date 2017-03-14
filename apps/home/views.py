@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
+from django.shortcuts import get_object_or_404
 
 
 def GetEventsAjax(request):
@@ -17,6 +18,7 @@ def GetEventsAjax(request):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     if request.is_ajax():
         if request.method == 'GET':
+            # =======================Listar eventos========================
             eventos = Event.objects.filter(course_id=request.GET.get('id'))
             # data = serializers.serialize("json", eventos)
             eventos_json = []
@@ -26,7 +28,7 @@ def GetEventsAjax(request):
                     "start": e.start,
                     "end": e.end,
                     "color": e.color(),
-                    "editable": False,
+                    "editable": request.user == e.user,
                     "startEditable": False,
                     "overlap": False,
                     "title": e.title(),
@@ -45,49 +47,35 @@ def GetEventsAjax(request):
                 "color": '#ff9f89'
             })
             data = json.dumps(eventos_json, cls=DjangoJSONEncoder)
-        elif request.method == 'POST':
+        elif request.method == 'POST' and 'course' in request.POST.keys():
+                # =======================Agregar evento========================
             e = Event()
             e.start = request.POST.get('start')
             e.end = request.POST.get('end')
             e.user = request.user
             e.course_id = request.POST.get('course')
             e.save()
-            """print("##################################")
-            print(e)
-            # capturar error si no se guarda
-            evento = Event.objects.filter(
-                course_id=request.POST.get('course')).order_by('-id')
-            evento_json = {
-                "id": evento[0].id,
-                "start": evento[0].start,
-                "end": evento[0].end,
-                "color": evento[0].color(),
-                "editable": False,
-                "startEditable": False,
-                "overlap": False,
-                "title": evento[0].title(),
-            }
-            data = json.dumps(evento_json, cls=DjangoJSONEncoder)
-            """
-
+            data = json.dumps(e.id, cls=DjangoJSONEncoder)
+        elif request.method == 'POST' and 'id' in request.POST.keys():
+                # =======================Eliminar evento=======================
+            e = get_object_or_404(Event, pk=request.POST.get('id'))
+            if e.user == request.user:
+                e.delete()
+                data = json.dumps("OK",
+                                  cls=DjangoJSONEncoder)
+            else:
+                data = 'No tienes permiso para eliminar.'
+        elif request.method == 'POST' and 'pk' in request.POST.keys():
+                # =======================Modificar evento=====================
+            e = get_object_or_404(Event, pk=request.POST.get('pk'))
+            if e.user == request.user:
+                e.start = request.POST.get('start')
+                e.end = request.POST.get('end')
+                e.save()
+                data = json.dumps(e.pk, cls=DjangoJSONEncoder)
+            else:
+                data = json.dumps(
+                    "No tienes permiso para modificar", cls=DjangoJSONEncoder)
     else:
         data = 'fail'
     return HttpResponse(data, content_type='application/json')
-
-"""
-def PostDepartamentoAjax(request):
-    if request.method == 'POST' and request.is_ajax():
-        d = Departamento()
-        d.descripcion = request.POST.get('des')
-        d.save()
-
-        obj = Departamento.objects.last()
-        departamento_json = {}
-        departamento_json['pk'] = obj.id
-        departamento_json['name'] = obj.descripcion
-        data_json = json.dumps(departamento_json)
-
-    else:
-        data_json = '{"data":"fail"}'
-    return HttpResponse(data_json, content_type='application/json')
-    """
