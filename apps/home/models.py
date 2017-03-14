@@ -1,13 +1,28 @@
 from django.db import models
 from django.utils.html import format_html
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import ugettext_lazy as _
+from django.utils.text import capfirst
+
+
+class User(AbstractUser):
+    color = models.CharField(max_length=16)
+
+    class Meta(AbstractUser.Meta):
+        # swappable = 'AUTH_USER_MODEL' #ver django-angular-seed
+        verbose_name = capfirst(_('user'))
+        verbose_name_plural = capfirst(_('users'))
+
+    def __str__(self):
+        return self.username
 
 
 class Course(models.Model):
     name = models.CharField(max_length=200)
     state = models.BooleanField(default=True)
 
-    class Meta:
+    class Meta(AbstractUser.Meta):
         verbose_name = "Curso"
         verbose_name_plural = "Cursos"
 
@@ -15,10 +30,13 @@ class Course(models.Model):
         return self.name
 
     def acciones(self):
-        return format_html(
-            """<a href="%s/calendario" class="link_btn_actions">Ir a calendario</a>
+        if self.state:
+            return format_html(
+                """<a href="%s/calendario" class="link_btn_actions">Ir a calendario</a>
             <a href="#" class="link_btn_actions">Ir a Descargas</a>""" % (self.pk)
-        )
+            )
+        else:
+            return u''
 
 
 class Event(models.Model):
@@ -37,7 +55,7 @@ class Event(models.Model):
         return u"%s -> %s %s" % (self.user.username, self.start, self.end)
 
     def color(self):
-        return u'red'
+        return self.user.color
 
     def title(self):
         if(self.user.first_name):

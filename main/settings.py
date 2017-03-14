@@ -25,7 +25,7 @@ SECRET_KEY = '3(-jaenx_8l_bvv7)okp2&nk_fhy%5z49ik^h63calf+@cw_hg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', ]
 
 
 # Application definition
@@ -114,6 +114,7 @@ USE_L10N = True
 
 #USE_TZ = True
 
+AUTH_USER_MODEL = 'home.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
