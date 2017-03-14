@@ -17,10 +17,9 @@ def GetEventsAjax(request):
     if not request.user.is_authenticated:
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     if request.is_ajax():
-        if request.method == 'GET':
+        if request.method == 'GET' and 'id' in request.GET.keys():
             # =======================Listar eventos========================
             eventos = Event.objects.filter(course_id=request.GET.get('id'))
-            # data = serializers.serialize("json", eventos)
             eventos_json = []
             for e in eventos:
                 eventos_json.append({
@@ -33,12 +32,9 @@ def GetEventsAjax(request):
                     "overlap": False,
                     "title": e.title(),
                     "isOwner": request.user == e.user
-                    # aqui comprobare si es mi usuario para que pueda editar
-                    #"resourceEditable": False,
                 })
             u = datetime.datetime.now()
             d = datetime.timedelta(weeks=2)
-            print(u)
             eventos_json.append({
                 "start": u - d,
                 "end": u,
