@@ -13,9 +13,11 @@ from django.urls import reverse
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.template.response import TemplateResponse
 from .models import User
+from django.utils.text import capfirst
 from django.contrib.auth.forms import (
     AdminPasswordChangeForm, UserChangeForm, UserCreationForm,
 )
+from django.utils.encoding import force_text
 
 
 @admin.register(Course)
@@ -52,7 +54,7 @@ class CourseAdmin(admin.ModelAdmin):
         context = dict(
             # Include common variables for rendering the admin template.
             self.admin_site.each_context(request),
-            title='Calendario por curso',
+            title='Separe un horario para ingresar',
             # adminForm=adminForm,
             form_url=form_url,
             # form=form,
@@ -67,6 +69,10 @@ class CourseAdmin(admin.ModelAdmin):
             original=course,
             save_as=False,
             show_save=True,
+            module_name=capfirst(force_text(
+                self.model._meta.verbose_name_plural)),
+            object=course,
+            preserved_filters=self.get_preserved_filters(request),
         )
         return TemplateResponse(request, "calendario/index.html", context)
 
