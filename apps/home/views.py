@@ -19,7 +19,7 @@ def GetEventsAjax(request):
     if request.is_ajax():
         if request.method == 'GET' and 'id' in request.GET.keys():
             # =======================Listar eventos========================
-            eventos = Event.objects.filter(course_id=request.GET.get('id'))
+            eventos = Event.objects.filter(platform_id=request.GET.get('id'))
             eventos_json = []
             for e in eventos:
                 eventos_json.append({
@@ -43,13 +43,13 @@ def GetEventsAjax(request):
                 "color": '#ff9f89'
             })
             data = json.dumps(eventos_json, cls=DjangoJSONEncoder)
-        elif request.method == 'POST' and 'course' in request.POST.keys():
+        elif request.method == 'POST' and 'platform' in request.POST.keys():
                 # =======================Agregar evento========================
             e = Event()
             e.start = request.POST.get('start')
             e.end = request.POST.get('end')
             e.user = request.user
-            e.course_id = request.POST.get('course')
+            e.platform_id = request.POST.get('platform')
             e.save()
             data = json.dumps(e.id, cls=DjangoJSONEncoder)
         elif request.method == 'POST' and 'id' in request.POST.keys():

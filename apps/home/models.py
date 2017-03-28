@@ -21,13 +21,13 @@ class User(AbstractUser):
         return format_html("<span style='background:%s'>%s</span>" % (self.color, self.color))
 
 
-class Course(models.Model):
+class Platform(models.Model):
     name = models.CharField(max_length=200)
     state = models.BooleanField(default=True)
 
-    class Meta(AbstractUser.Meta):
-        verbose_name = "Curso"
-        verbose_name_plural = "Cursos"
+    class Meta:
+        verbose_name = "Plataforma"
+        verbose_name_plural = "Plataformas"
 
     def __str__(self):
         return self.name
@@ -36,17 +36,45 @@ class Course(models.Model):
         if self.state:
             return format_html(
                 """<a href="%s/calendario" class="link_btn_actions">Ir a calendario</a>
-            <a href="#" class="link_btn_actions">Ir a Descargas</a>""" % (self.pk)
+            <a href="%s/descargas" class="link_btn_actions">Ir a Descargas</a>""" % (self.pk, self.pk)
             )
         else:
             return u''
+
+
+class CourseGroup(models.Model):
+    name = models.CharField(max_length=200)
+    state = models.BooleanField(default=True)
+    platform = models.ForeignKey(Platform)
+
+    class Meta:
+        verbose_name = "Grupo"
+        verbose_name_plural = "Grupos"
+
+    def __str__(self):
+        return self.name
+
+
+class Course(models.Model):
+    name = models.CharField(max_length=200)
+    state = models.BooleanField('Estado', default=False)
+    isDownload = models.BooleanField('¿Esta descargado?', default=False)
+    user = models.ForeignKey('User', blank=True, null=True)
+    group = models.ForeignKey(CourseGroup)
+
+    class Meta:
+        verbose_name = "Curso"
+        verbose_name_plural = "Cursos"
+
+    def __str__(self):
+        return self.name
 
 
 class Event(models.Model):
     start = models.DateTimeField()
     end = models.DateTimeField()
     user = models.ForeignKey(User)
-    course = models.ForeignKey(Course)
+    platform = models.ForeignKey(Platform)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

@@ -1,0 +1,75 @@
+{% extends "admin/base_site.html" %} {% load i18n static %} {% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static " admin/css/dashboard.css " %}" />
+<style>
+.dashboard #content {
+    width: 70%;
+}
+</style>
+<script type="text/javascript">
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+</script>{% endblock %} {% block bodyclass %}{{ block.super }} dashboard{% endblock %} {% block content %}
+<div id="content-main">
+    {% if group_list %} {% for group in group_list %}
+    <div class="app module">
+        <table style="width:600px">
+            <caption>
+                <span class="section" title="{{group.name}}">{{group.name}}</span>
+            </caption>
+            <thead>
+                <tr>
+                    <th>
+                        <input type="checkbox" id="action-toggle">
+                    </th>
+                    <th>#</th>
+                    <th>Curso</th>
+                    <th>Estado</th>
+                    <th>Usuario</th>
+                    <th>Esta Descargado</th>
+                </tr>
+            </thead>
+            {% for course in group.children %}
+            <tr class="model">
+                <td>
+                    <input type="checkbox" id="action-toggle">
+                </td>
+                <td>{{ forloop.counter }}</td>
+                <td scope="row">{{ course.name }}</td>
+                <td>{{ course.state }}</td>
+                <td>{{ course.user }}</td>
+                <td>{{ course.isDownload }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endfor %} {% else %}
+    <p>No hay cursos</p>
+    {% endif %}
+</div>
+{% endblock %}

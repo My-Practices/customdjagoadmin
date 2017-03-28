@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.conf.urls import url
-from .models import Course
-from .models import Event
+from .models import Platform, CourseGroup, Course
 from django.core.exceptions import PermissionDenied
 from django.contrib.admin.utils import unquote
 from django.http import Http404, HttpResponseRedirect
@@ -17,9 +16,12 @@ from django.contrib.auth.forms import (
     AdminPasswordChangeForm, UserChangeForm, UserCreationForm,
 )
 
+admin.site.register(Course)
+admin.site.register(CourseGroup)
 
-@admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
+
+@admin.register(Platform)
+class PlatformAdmin(admin.ModelAdmin):
     #fields = ('name',)
     #readonly_fields = ('name', 'state')
     search_fields = ['name']
@@ -35,16 +37,21 @@ class CourseAdmin(admin.ModelAdmin):
         return [
             url(
                 r'^(.+)/calendario/$',
-                self.admin_site.admin_view(self.calendario),
-                name='show_curso_calendario',
+                self.admin_site.admin_view(self.calendar),
+                name='show_calendar',
+            ),
+            url(
+                r'^(.+)/descargas/$',
+                self.admin_site.admin_view(self.download),
+                name='show_downloads',
             ),
         ] + super().get_urls()
 
-    def calendario(self, request, id, form_url=''):
+    def calendar(self, request, id, form_url=''):
         if not self.has_change_permission(request):
             raise PermissionDenied
-        course = self.get_object(request, unquote(id))
-        if course is None:
+        platform = self.get_object(request, unquote(id))
+        if platform is None:
             raise Http404(_('%(name)s object with primary key %(key)r does not exist.') % {
                 'name': self.model._meta.verbose_name,
                 'key': escape(id),
@@ -52,7 +59,7 @@ class CourseAdmin(admin.ModelAdmin):
         context = dict(
             # Include common variables for rendering the admin template.
             self.admin_site.each_context(request),
-            title='Calendario por curso',
+            title='Calendario por plataforma',
             # adminForm=adminForm,
             form_url=form_url,
             # form=form,
@@ -64,11 +71,46 @@ class CourseAdmin(admin.ModelAdmin):
             has_change_permission=True,
             has_absolute_url=False,
             opts=self.model._meta,
-            original=course,
+            original=platform,
             save_as=False,
             show_save=True,
         )
         return TemplateResponse(request, "calendario/index.html", context)
+
+    def download(self, request, id, form_url=''):
+        if not self.has_change_permission(request):
+            raise PermissionDenied
+        platform = self.get_object(request, unquote(id))
+        if platform is None:
+            raise Http404(_('%(name)s object with primary key %(key)r does not exist.') % {
+                'name': self.model._meta.verbose_name,
+                'key': escape(id),
+            })
+        groups = CourseGroup.objects.filter(platform=platform)
+        for group in groups:
+            group.children = Course.objects.filter(group=group)
+
+        context = dict(
+            # Include common variables for rendering the admin template.
+            self.admin_site.each_context(request),
+            title='Descargas',
+            # adminForm=adminForm,
+            form_url=form_url,
+            # form=form,
+            is_popup=(IS_POPUP_VAR in request.POST or
+                      IS_POPUP_VAR in request.GET),
+            add=True,
+            change=False,
+            has_delete_permission=False,
+            has_change_permission=True,
+            has_absolute_url=False,
+            opts=self.model._meta,
+            original=platform,
+            group_list=groups,
+            save_as=False,
+            show_save=True,
+        )
+        return TemplateResponse(request, "descargas/index.html", context)
 
 
 @admin.register(User)
